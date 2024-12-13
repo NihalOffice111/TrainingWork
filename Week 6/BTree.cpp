@@ -36,7 +36,7 @@ int main(){
     BTree.insert(12);
     BTree.insert(32);
     BTree.insert(32);
-    //https://github.com/NihalOffice111/TrainingWork.git
+    BTree.insert(45);
 
 
     return 0;
