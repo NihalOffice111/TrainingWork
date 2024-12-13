@@ -1,0 +1,71 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 // Online C++ compiler to run C++ program online\
+#include <iostream>\
+#include <string>\
+using namespace std;\
+\
+template <typename T, typename U>\
+class BankAccount \
+\{\
+private:\
+    T accountNumber;  // Generic type for account number\
+    U balance;        // Generic type for balance\
+\
+public:\
+    // Constructor\
+    BankAccount(T accNum, U initialBalance) \
+        : accountNumber(accNum), balance(initialBalance) \{\}\
+\
+    // Deposit function to add money to the account\
+    void deposit(U amount) \
+    \{\
+        balance += amount;\
+        cout << "Deposited: " << amount << ". New balance: " << balance << endl;\
+    \}\
+\
+    // Withdraw function to remove money from the account\
+    void withdraw(U amount) \
+    \{\
+        if (amount > balance) \
+        \{\
+            cout << "Insufficient funds. Withdrawal of " << amount << " failed." << endl;\
+        \} \
+        else \
+        \{\
+            balance -= amount;\
+            cout << "Withdrew: " << amount << ". New balance: " << balance << endl;\
+        \}\
+    \}\
+\
+    // Display account information\
+    void display() const \
+    \{\
+        cout << "Account Number: " << accountNumber << endl;\
+        cout << "Balance: " << balance << endl;\
+    \}\
+\};\
+\
+int main() \
+\{\
+    BankAccount<int, double> account1(12345, 1000.50);\
+\
+    account1.display();\
+    account1.deposit(200.75);\
+    account1.withdraw(50.25);\
+    account1.display();\
+\
+    // Create a BankAccount with a string account number and an int balance\
+    BankAccount<string, int> account2("ABC123XYZ", 500);\
+\
+    account2.display();\
+    account2.deposit(300);\
+    account2.withdraw(100);\
+    account2.display();\
+    return 0;\
+\}}
