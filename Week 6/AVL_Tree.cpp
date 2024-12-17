@@ -131,20 +131,14 @@ public:
     return current;
 }
 
-// Function to delete a node
 Node* deleteNode(Node* root, int key) {
-    // 1. Perform standard BST delete
     if (!root) return root;
 
-    // If the key to be deleted is smaller than the root's key, go to the left subtree
     if (key < root->data)
         root->left = deleteNode(root->left, key);
-    // If the key to be deleted is larger than the root's key, go to the right subtree
     else if (key > root->data)
         root->right = deleteNode(root->right, key);
-    // If the key is the same as the root's key, this is the node to be deleted
     else {
-        // Node with only one child or no child
         if (!root->left) {
             Node* temp = root->right;
             delete root;
@@ -155,39 +149,31 @@ Node* deleteNode(Node* root, int key) {
             return temp;
         }
 
-        // Node with two children: Get the inorder successor (smallest in the right subtree)
         Node* temp = minValueNode(root->right);
 
-        // Copy the inorder successor's content to this node
         root->data = temp->data;
 
-        // Delete the inorder successor
         root->right = deleteNode(root->right, temp->data);
     }
 
-    // 2. Update the height of the current node
     root->height = 1 + max(heightOfTree(root->left), heightOfTree(root->right));
 
-    // 3. Get balance factor to check whether this node became unbalanced
     int balance = getBalanceFactor(root);
 
-    // 4. Perform rotations if unbalanced
-
-    // Left-Left Case
+    //LL
     if (balance > 1 && getBalanceFactor(root->left) >= 0)
         return rightRotation(root);
 
-    // Right-Right Case
+    // RR
     if (balance < -1 && getBalanceFactor(root->right) <= 0)
         return leftRotation(root);
-
-    // Left-Right Case
+    //LR
     if (balance > 1 && getBalanceFactor(root->left) < 0) {
         root->left = leftRotation(root->left);
         return rightRotation(root);
     }
 
-    // Right-Left Case
+    //RL
     if (balance < -1 && getBalanceFactor(root->right) > 0) {
         root->right = rightRotation(root->right); 
         return leftRotation(root);
