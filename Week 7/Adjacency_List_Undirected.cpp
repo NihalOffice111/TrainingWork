@@ -71,19 +71,60 @@ public:
             }
         }
     }
+
+    void DepthFirstSearch(int start){
+        stack<int> s;
+        vector<bool> visited(vertex,false);
+        s.push(start);
+        visited[start] = true;
+
+        while(!s.empty()){
+            int x = s.top();
+            s.pop();
+            cout<<x<<" ";
+
+            for(int y : list[x]){
+                if(!visited[y]){
+                    s.push(y);
+                    visited[y] = true;
+                }
+            }
+        }
+    }
 };
 int main()
 {
     AdjacencyList al(5);
-    al.InsertVertex(0, 1);
-    al.InsertVertex(1, 2);
-    al.InsertVertex(2, 3);
-    al.InsertVertex(3, 4);
-    al.InsertVertex(0, 4);
+    // al.InsertVertex(0, 1);
+    // al.InsertVertex(1, 2);
+    // al.InsertVertex(2, 3);
+    // al.InsertVertex(3, 4);
+    // al.InsertVertex(0, 4);
+
+    // al.InsertVertex(0,1);
+    // al.InsertVertex(0,3);
+    // al.InsertVertex(3,0);
+    // al.InsertVertex(3,1);
+    // al.InsertVertex(1,0);
+    // al.InsertVertex(1,2);
+    // al.InsertVertex(1,3);
+    // al.InsertVertex(2,1);
+
+    al.InsertVertex(0,1);
+    al.InsertVertex(0,3);
+    al.InsertVertex(1,3);
+    al.InsertVertex(1,2);
+
+
 
     cout<<endl;
     al.display();
 
+    cout<<"Breadth First Search: ";
     al.BreadthFirstSearch(0);
+
+    cout<<endl;
+    cout<<"Depth First Search: ";
+    al.DepthFirstSearch(0);
     return 0;
 }
