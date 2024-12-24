@@ -14,7 +14,7 @@ private:
    static int transactionId;
     double transactionAmount;
     TransactionType tt;
-    string time;
+    tm time;
     string place;
     string device;
 
@@ -23,14 +23,18 @@ public:
     {
     }
 
-    Transaction(int id, double amount, Transaction t, string time, string place, string device)
+    Transaction(int id, double amount, TransactionType t, string place, string device, tm time)
     {
         transactionId = id++;
         amount = transactionAmount;
-
         this->time = time;
+        this->tt = t;
         this->place = place;
         this->device = device;
+    }
+    tm getTransactionTime()
+    {
+        return time;
     }
 };
 
@@ -64,7 +68,6 @@ private:
     string bankname;
     string userDevice;
     string location;
-
     vector<Transaction> transaction;
 
 public:
@@ -126,25 +129,126 @@ void TransactionOperation :: checkTransactions(string accnum, double Amount, str
 
             if (Amount > 20000)
             {
-                fraudInAmount(userDetails);
+                if(fraudInAmount(userDetails, Amount))
+                {
+                    
+                }
+                else
+                {
+                    break;
+                }
             }
 
             if (x.getlocation() != location)
             {
-                fraudInLocation(userDetails, location);
+                if(fraudInLocation(userDetails, location, Amount))
+                {
+
+                }
+                else
+                {
+                    break;
+                }
             }
 
             if (x.getuserDevice() != currdevice)
             {
-                fraudInDevice(userDetails, currdevice);
+                if(fraudInDevice(userDetails, currdevice, location, Amount))
+                {
+
+                }
+                else
+                {
+                    break;
+                }
             }
 
-            //need to add time fraud
+            if(fraudInTime())
+            {
+                
+            }
+            else
+            {
+                break;
+            }
             
             //add transaction;
             
         }
     }
+}
+
+bool fraudInAmount(vector<User> userDetails, double Amount)
+{
+    char ch;
+    cout<<"Hello, Is this you doing transaction for amount Rs. "<<Amount;
+    cin>>ch;
+    if(ch == 'y' || ch == 'Y')
+    {
+        return true;
+    }
+    else
+    {
+        cout<<"A transaction exceeding the limit of Rs. 20000 has been attempted on your account by someone other than the account owner. Please review your account activity immediately.";
+        return false;
+    }
+}
+
+bool fraudInLocation(vector<User> userDetails, string location, double Amount)
+{
+    char ch;
+    cout<<"Hello, Is this you doing transaction from Location = "<<location<<" for Amount = Rs. "<<Amount;
+    cin>>ch;
+    if(ch == 'y' || ch == 'Y')
+    {
+        return true;
+    }
+    else
+    {
+        cout<<"A transaction exceeding Rs. 20000 was attempted on your account by someone other than the account owner, from a different location.";
+        return false;
+    }
+}
+
+bool fraudInDevice(vector<User> userDetails, string currDevice, string Location, double Amount)
+{
+    char ch;
+    cout<<"Hello, Is this you doing transaction from Device = "<<currDevice<<"form Location = "<<Location<<" for Amount = Rs. "<<Amount;
+    cin>>ch;
+    if(ch == 'y' || ch == 'Y')
+    {
+        return true;
+    }
+    else
+    {
+        cout<<"A transaction exceeding Rs. 20000 was attempted on your account by someone other than the account owner, from a different location and device.";
+        return false;
+    }
+}
+
+bool fraudInTime()
+{
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    int currentHour = ltm->tm_hour;
+    if(currentHour >= 0 || currentHour <= 5)
+    {
+        char ch;
+        cout << "Hello, Is this you doing a transaction at this time (current time is " << currentHour << " hours)?\n";
+        cout << "The transaction is happening outside normal hours (9 AM to 9 PM).\n";
+        cout << "Is this transaction legitimate? (y/n): ";
+        cin >> ch;
+        if(ch =='y' || ch =='Y')
+        {
+            return true;
+        }
+        else
+        {
+            cout << "Transaction marked as suspicious due to time of transaction.\n";
+            return false;
+        }
+    }
+    return true;
 }
 
 int main()
