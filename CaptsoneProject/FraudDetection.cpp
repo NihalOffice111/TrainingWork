@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+//
 class Transaction
 {
 private:
@@ -9,56 +9,66 @@ private:
     int transactiontime;
     string place;
     string device;
+    double riskfactor;
 
 public:
-    Transaction()
-    {
-    }
+    Transaction() {}
 
-    Transaction(double amount, int transactiontime, string place, string device)
+    Transaction(double amount, int transactiontime, string place, string device, double risk)
     {
         transactionId = getTransactionId();
         this->transactionAmount = amount;
         this->transactiontime = transactiontime;
         this->place = place;
         this->device = device;
+        this->riskfactor = risk;
     }
 
     static int getTransactionId()
     {
         return ++transactionId;
     }
+
     double getTransactionAmount()
     {
         return transactionAmount;
     }
+
     int getTransactionTime()
     {
         return transactiontime;
     }
+
     string getLocation()
     {
         return place;
     }
+
     string getDevice()
     {
         return device;
     }
 
-    friend std::ostream &operator<<(std::ostream &os, const Transaction &tr);
+    double getriskFactor()
+    {
+        return riskfactor;
+    }
+
+    friend ostream &operator<<(ostream &os, const Transaction &tr);
 };
 
-std::ostream &operator<<(std::ostream &os, const Transaction &tr)
+ostream &operator<<(ostream &os, const Transaction &tr)
 {
     os << "Transaction ID: " << tr.getTransactionId() << ", "
        << "Amount: " << tr.transactionAmount << ", "
        << "Time: " << tr.transactiontime << ", "
        << "Place: " << tr.place << ", "
-       << "Device: " << tr.device;
+       << "Device: " << tr.device << ", "
+       << "Risk: " << tr.riskfactor;
     return os;
 }
 
-int Transaction ::transactionId = 10011;
+int Transaction::transactionId = 10011;
 
 class Node
 {
@@ -67,9 +77,7 @@ public:
     Node *next;
     Node *prev;
 
-    Node()
-    {
-    }
+    Node() {}
 
     Node(Transaction transdata)
     {
@@ -80,6 +88,7 @@ public:
 };
 
 static int nextUsedId = 1111;
+
 class User
 {
 private:
@@ -90,12 +99,17 @@ private:
     string userDevice;
     string location;
     Node *head;
+    double totalTransactionAmount;
+    int transactionCount;
 
 public:
     User()
     {
         head = nullptr;
+        totalTransactionAmount = 0.0;
+        transactionCount = 0;
     }
+
     User(string name, string account, string bankname, string userDevice, string location)
     {
         userId = getUserId();
@@ -104,6 +118,7 @@ public:
         this->bankname = bankname;
         this->location = location;
         this->userDevice = userDevice;
+        head = nullptr;
     }
 
     string getuserDevice()
@@ -126,57 +141,81 @@ public:
         return accountnumber;
     }
 
+    double getAverageTransactionAmount()
+    {
+        if (transactionCount == 0)
+        {
+            return 0.0;
+        }
+        return totalTransactionAmount / transactionCount;
+    }
+
     void AddTransaction(Transaction tr)
     {
-        cout << "Hello From Add trasnc " << endl;
         Node *newTransaction = new Node(tr);
-        cout<<"AFter the newTrasaction "<<endl;
 
         if (head == nullptr)
         {
-            cout << "Is head Null" << endl;
             head = newTransaction;
-            
         }
         else
         {
             Node *temp = head;
-
             while (temp->next != nullptr)
             {
                 temp = temp->next;
             }
             temp->next = newTransaction;
             newTransaction->prev = temp;
-            cout << "Trasaction Added to History " << endl;
         }
 
-        cout << "Current Transaction : " << endl;
+        totalTransactionAmount = totalTransactionAmount + tr.getTransactionAmount();
+        transactionCount++;
+
+        cout << "Current Transaction: " << endl;
         cout << newTransaction->transdata << endl;
-        return;
     }
 
-    // need to addTrasnsaction method for specific user
+    double calculateAverageRisk() {
+    if (head == nullptr) {
+        return 0.0; 
+    }
 
-    // display user Tranasction if he wants
+    Node* temp = head;
+    double totalRisk = 0.0;
+    int count = 0;
+
+    while (temp != nullptr) {
+        totalRisk += temp->transdata.getriskFactor();
+        count++;
+        temp = temp->next;
+    }
+
+    return count > 0 ? totalRisk / count : 0.0;
+}
+
 
     void showHistory()
     {
-        if (head == NULL)
+        if (head == nullptr)
         {
-            cout << "No transaction hstory available " << endl;
+            cout << "No transaction history available." << endl;
             return;
         }
         Node *temp = head;
-        while (temp != NULL)
+        while (temp != nullptr)
         {
             cout << "TransactionId : " << temp->transdata.getTransactionId() << endl;
             cout << "Transaction Amount : " << temp->transdata.getTransactionAmount() << endl;
             cout << "Transaction time : " << temp->transdata.getTransactionTime() << endl;
             cout << "Transaction location: " << temp->transdata.getLocation() << endl;
             cout << "Transaction device: " << temp->transdata.getDevice() << endl;
+            cout << "Transaction Risk: " << temp->transdata.getriskFactor() << endl;
+            cout << endl;
+            cout << endl;
             temp = temp->next;
         }
+        cout << endl;
         cout << endl;
     }
 };
@@ -184,46 +223,51 @@ public:
 class TransactionOperation
 {
 public:
-    Node *head;
-
-    TransactionOperation()
-    {
-        head = nullptr;
-    }
-
-    void checkTransactions(User &uu, string accnum, double Amount, string location, string currdevice, int currenthour, vector<User> userDetails);
-    bool fraudInAmount(vector<User> userDetails, double Amount);
-    bool fraudInLocation(vector<User> userDetails, string location, double Amount);
-    bool fraudInDevice(vector<User> userDetails, string currDevice, string Location, double Amount);
+    void checkTransactions(User &uu, string accnum, double Amount, string location, string currdevice, int currenthour, map<string, User> &userDetails);
+    bool fraudInAmount(map<string, User> &userDetails, double Amount, string accnum);
+    bool fraudInLocation(map<string, User> &userDetails, string location, double Amount, string accnum);
+    bool fraudInDevice(map<string, User> &userDetails, string currDevice, string Location, double Amount, string accnum);
     bool fraudInTime(int currentHour);
 };
 
-void TransactionOperation ::checkTransactions(User &uu, string accnum, double Amount, string location, string currdevice, int currenthour, vector<User> userDetails)
+void TransactionOperation::checkTransactions(User &uu, string accnum, double Amount, string location, string currdevice, int currenthour, map<string, User> &userDetails)
 {
-
     bool flagged = false;
+    double risk = 0.0;
 
     if (Amount > 20000)
     {
-        if (!fraudInAmount(userDetails, Amount))
+        if (!fraudInAmount(userDetails, Amount, accnum))
         {
             flagged = true;
+        }
+        else
+        {
+            risk = risk + 10 * 8.0;
         }
     }
 
     if (uu.getlocation() != location)
     {
-        if (!fraudInLocation(userDetails, location, Amount))
+        if (!fraudInLocation(userDetails, location, Amount, accnum))
         {
             flagged = true;
+        }
+        else
+        {
+            risk = risk + 2 * 2.0;
         }
     }
 
     if (uu.getuserDevice() != currdevice)
     {
-        if (!fraudInDevice(userDetails, currdevice, location, Amount))
+        if (!fraudInDevice(userDetails, currdevice, location, Amount, accnum))
         {
             flagged = true;
+        }
+        else
+        {
+            risk = risk + 3 * 5.0;
         }
     }
 
@@ -231,24 +275,32 @@ void TransactionOperation ::checkTransactions(User &uu, string accnum, double Am
     {
         flagged = true;
     }
-
-    // add transaction;
+    else
+    {
+        risk = risk + 1 * 2.0;
+    }
 
     if (flagged)
     {
-        cout << "Fraud Detected Transaction Aborted " << endl;
+        cout << "Fraud Detected. Transaction Aborted." << endl;
     }
     else
     {
-
-        Transaction tr(Amount, currenthour, location, currdevice);
+        Transaction tr(Amount, currenthour, location, currdevice, risk);
         cout << "Transaction Successful" << endl;
         uu.AddTransaction(tr);
     }
 }
 
-bool TransactionOperation ::fraudInAmount(vector<User> userDetails, double Amount)
+bool TransactionOperation::fraudInAmount(map<string, User> &userDetails, double Amount, string accnum)
 {
+    User &u = userDetails[accnum];
+    double averageAmount = u.getAverageTransactionAmount();
+    if (Amount > 2 * averageAmount)
+    {
+        cout << "Suspicious transaction: Amount exceeds twice the user's average transaction amount." << endl;
+        //return false;
+    }
     char ch;
     cout << "Hello, Is this you doing transaction for amount Rs. " << Amount;
     cin >> ch;
@@ -263,7 +315,7 @@ bool TransactionOperation ::fraudInAmount(vector<User> userDetails, double Amoun
     }
 }
 
-bool TransactionOperation ::fraudInLocation(vector<User> userDetails, string location, double Amount)
+bool TransactionOperation::fraudInLocation(map<string, User> &userDetails, string location, double Amount, string accnum)
 {
     char ch;
     cout << "Hello, Is this you doing transaction from Location = " << location << " for Amount = Rs. " << Amount;
@@ -279,10 +331,10 @@ bool TransactionOperation ::fraudInLocation(vector<User> userDetails, string loc
     }
 }
 
-bool TransactionOperation ::fraudInDevice(vector<User> userDetails, string currDevice, string Location, double Amount)
+bool TransactionOperation::fraudInDevice(map<string, User> &userDetails, string currDevice, string Location, double Amount, string accnum)
 {
     char ch;
-    cout << "Hello, Is this you doing transaction from Device = " << currDevice << "form Location = " << Location << " for Amount = Rs. " << Amount;
+    cout << "Hello, Is this you doing transaction from Device = " << currDevice << " from Location = " << Location << " for Amount = Rs. " << Amount;
     cin >> ch;
     if (ch == 'y' || ch == 'Y')
     {
@@ -295,9 +347,8 @@ bool TransactionOperation ::fraudInDevice(vector<User> userDetails, string currD
     }
 }
 
-bool TransactionOperation ::fraudInTime(int currentHour)
+bool TransactionOperation::fraudInTime(int currentHour)
 {
-
     if (currentHour >= 0 && currentHour <= 5)
     {
         char ch;
@@ -320,136 +371,128 @@ bool TransactionOperation ::fraudInTime(int currentHour)
 
 int main()
 {
+    map<string, User> userDetails;
+    TransactionOperation tq;
+    int choice;
+    char ch;
+    string accnum, currdevice, location;
+    double Amount;
+    int currentHour;
+
     string uname;
     string userAccountnumber;
     string bankname;
     string trustedDevice;
     string trustedlocation;
 
-    string accnum;
-    string currdevice;
-    string location;
-    double Amount;
-    int count = 0;
-
-    vector<User> userDetails;
-    char ch;
-    int choice;
-    User user;
-    User uu;
-    string tempnum;
-
-    time_t now;
-    tm *ltm;
-    int currentHour;
-
-    cout << "***********************************************************MAIN MENU**************************************************************" << endl;
-    cout << "1. ADD NEW USER " << endl;
-    cout << "2. DO TRANSACTIONS " << endl;
-    cout << "3. SHOW TRANSACTION HISTORY " << endl;
-    cout << "4. EXIT " << endl;
+    userDetails["SBI123456"] = User("Honour", "SBI123456", "STATE_BANK_OF_INDIA", "PC", "Nagpur");
+    userDetails["HDFC987654"] = User("Edward", "HDFC987654", "HDFC_BANK", "Mobile", "Hyderabad");
+    userDetails["ICICI763242"] = User("Arno", "ICICI763242", "ICICI_BANK", "PC", "Raipur");
+    userDetails["BOI343422"] = User("Shay", "BOI343422", "BANK_OF_INDIA", "Tablet", "Pune");
+    userDetails["UN987654"] = User("Jacob", "UN987654", "UNION_BANK", "Mobile", "London");
+    userDetails["SBI1235678"] = User("Kassandra", "SBI1235678", "STATE_BANK_OF_INDIA", "Tablet", "Greece");
 
     do
     {
-        cout << "Enter the choice from the Main Menu " << endl;
-        cin >> choice;
-        TransactionOperation tq;
+        cout << "********************MAIN MENU*********************" << endl;
+        cout << "1. ADD NEW USER " << endl;
+        cout << "2. DO TRANSACTIONS " << endl;
+        cout << "3. SHOW TRANSACTION HISTORY " << endl;
+        cout << "4. CALCULATE AVERAGE RISK RATE FOR SPECIFIC USER TRANSACTION " << endl;
+        cout << "5. EXIT " << endl;
 
+        cout << "Enter the choice from the Main Menu: ";
+        cin >> choice;
 
         switch (choice)
         {
         case 1:
-            // cout << "Enter the User  Detials  " << endl;
-            // cout << "Enter the Name : ";
-            // cin >> uname;
-            // cout << "Enter user Account number : ";
-            // cin >> userAccountnumber;
-            // cout << "Enter user bankname : ";
-            // cin >> bankname;
-            // cout << "Enter user trusted Device : ";
-            // cin >> trustedDevice;
-            // cout << "Enter user trusted location: ";
-            // cin >> trustedlocation;
+            cout << "Enter the User  Detials  " << endl;
+            cout << "Enter the Name : ";
+            cin >> uname;
+            cout << "Enter user Account number : ";
+            cin >> userAccountnumber;
+            cout << "Enter user bankname : ";
+            cin >> bankname;
+            cout << "Enter user trusted Device : ";
+            cin >> trustedDevice;
+            cout << "Enter user trusted location: ";
+            cin >> trustedlocation;
 
-            // userDetails.push_back(User(uname, userAccountnumber, bankname, trustedDevice, trustedlocation));
-            // cout << "User Details Registered " << endl;
-            // break;
-
-            userDetails.push_back(User("Honour", "SBI123456", "STATE_BANK_OF_INDIA", "PC", "Nagpur"));
-            userDetails.push_back(User("Edward", "HDFC987654", "HDFC_BANK", "Mobile", "Hyderabad"));
-            userDetails.push_back(User("Arno", "ICICI763242", "ICICI_BANK", "PC", "Raipur"));
-            userDetails.push_back(User("Shay", "BOI343422", "BANK_OF_INDIA", "Tablet", "Pune"));
-            userDetails.push_back(User("Jacob", "UN987654", "UNION_BANK", "Mobile", "London"));
-            userDetails.push_back(User("Kassandra", "SBI1235678", "STATE_BANK_OF_INDIA", "Tablet", "Greece"));
+            userDetails[userAccountnumber] = User(uname, userAccountnumber, bankname, trustedDevice, trustedlocation);
+            cout << "User Details Registered " << endl;
             break;
+            
 
         case 2:
+            cout << "Enter account number: ";
+            cin >> accnum;
 
-            cout << "Welcome to Transaction" << endl;
-
-            do
+            if (userDetails.find(accnum) != userDetails.end())
             {
-                cout << "Enter the Account number :";
-                cin >> accnum;
-                for (auto &x : userDetails)
-                {
-                    if (x.getAccountNumber() == accnum)
-                    {
-                        uu = x;
-                        tempnum = x.getAccountNumber();
-                        break;
-                    }
-                }
+                User &user = userDetails[accnum];
 
-                count++;
+                cout << "Enter amount: ";
+                cin >> Amount;
+                cout << "Enter location: ";
+                cin >> location;
+                cout << "Enter device: ";
+                cin >> currdevice;
 
-            } while (tempnum != accnum && count != 3);
+                time_t now = time(0);
+                tm *ltm = localtime(&now);
+                currentHour = ltm->tm_hour;
 
-            if (count == 3)
-            {
-                cout << "Your Account has been blocked for 24hrs for not Entering Correct Account number " << endl;
-                exit(0);
+                tq.checkTransactions(user, accnum, Amount, location, currdevice, currentHour, userDetails);
+                // user.showHistory();
             }
+            else
+            {
+                cout << "Account not found!" << endl;
+            }
+            break;
+        case 3:
+            cout << "Enter account number to view transaction history: ";
+            cin >> accnum;
 
-            cout << "Enter the amount to be withDraw: ";
-            cin >> Amount;
-
-            cout << "Enter the cuurent location:  ";
-            cin >> location;
-
-            cout << "Enter the current Device: ";
-            cin >> currdevice;
-
-            now = time(0);
-            ltm = localtime(&now);
-            currentHour = ltm->tm_hour;
-
-            tq.checkTransactions(uu, accnum, Amount, location, currdevice, currentHour, userDetails);
-
+            if (userDetails.find(accnum) != userDetails.end())
+            {
+                User &user = userDetails[accnum];
+                user.showHistory();
+            }
+            else
+            {
+                cout << "Account not found!" << endl;
+            }
             break;
 
-
-        case 3:
-            cout << "Showing Transaction History " << endl;
-            cout<<"Enter the Account ID : ";
-            cin>>userAccountnumber;
-            User u;
-            for(auto x : userDetails){
-                if(x.getAccountNumber() == userAccountnumber){
-                    u = x;
-                    u.showHistory();
-                    break;
-                }
-            }
-           
+        case 4:
+            cout << "Enter the accoutn number you wish to find the average risk rate : ";
+            cin >> accnum;
+            if (userDetails.find(accnum) != userDetails.end())
+            {
+                User &user = userDetails[accnum];
+                double avgRisk = user.calculateAverageRisk();
+                cout << "Average Risk for User with account " << accnum << ": " << avgRisk << endl;
                 
-            
-            
+            }
+            else
+            {
+                cout << "Account number not found." << endl;
+            }
+
+            break;
+        case 5:
+            cout << "Exiting program." << endl;
+            break;
+        default:
+            cout << "Invalid choice, please try again!" << endl;
             break;
         }
 
-        cout << "Do you want to Continue " << endl;
+        cout << "Do you want to continue? (Y/N): ";
         cin >> ch;
-
     } while (ch == 'Y' || ch == 'y');
+
+    return 0;
 }
