@@ -4,7 +4,8 @@ using namespace std;
 class Transaction
 {
 private:
-    static int transactionId;
+    static int transactionIdCounter;
+    int transactionId;
     double transactionAmount;
     int transactiontime;
     string place;
@@ -16,7 +17,7 @@ public:
 
     Transaction(double amount, int transactiontime, string place, string device, double risk)
     {
-        transactionId = getTransactionId();
+        transactionId = ++transactionIdCounter;
         this->transactionAmount = amount;
         this->transactiontime = transactiontime;
         this->place = place;
@@ -24,9 +25,9 @@ public:
         this->riskfactor = risk;
     }
 
-    static int getTransactionId()
+    int getTransactionId()
     {
-        return ++transactionId;
+        return transactionId;
     }
 
     double getTransactionAmount()
@@ -59,7 +60,7 @@ public:
 
 ostream &operator<<(ostream &os, const Transaction &tr)
 {
-    os << "Transaction ID: " << tr.getTransactionId() << ", "
+    os << "Transaction ID: " << tr.transactionId << ", "
        << "Amount: " << tr.transactionAmount << ", "
        << "Time: " << tr.transactiontime << ", "
        << "Place: " << tr.place << ", "
@@ -68,7 +69,7 @@ ostream &operator<<(ostream &os, const Transaction &tr)
     return os;
 }
 
-int Transaction::transactionId = 10011;
+int Transaction:: transactionIdCounter = 10011;
 
 class Node
 {
@@ -121,6 +122,14 @@ public:
         head = nullptr;
     }
 
+    string getUserName(){
+        return username;
+    }
+
+    string getbankName(){
+        return bankname;
+    }
+
     string getuserDevice()
     {
         return userDevice;
@@ -140,6 +149,9 @@ public:
     {
         return accountnumber;
     }
+
+    
+
 
     double getAverageTransactionAmount()
     {
@@ -176,23 +188,32 @@ public:
         cout << newTransaction->transdata << endl;
     }
 
-    double calculateAverageRisk() {
-    if (head == nullptr) {
-        return 0.0; 
+    double calculateAverageRisk()
+    {
+        if (head == nullptr)
+        {
+            return 0.0;
+        }
+
+        Node *temp = head;
+        double totalRisk = 0.0;
+        int count = 0;
+
+        while (temp != nullptr)
+        {
+            totalRisk += temp->transdata.getriskFactor();
+            count++;
+            temp = temp->next;
+        }
+
+        return count > 0 ? totalRisk / count : 0.0;
     }
 
-    Node* temp = head;
-    double totalRisk = 0.0;
-    int count = 0;
-
-    while (temp != nullptr) {
-        totalRisk += temp->transdata.getriskFactor();
-        count++;
-        temp = temp->next;
+    void findUserDetails(User &user){
+        cout<<"Name : "<< user.getUserName()<<endl;
+        cout<<"Account Number : "<<user.getbankName()<<endl;
+        cout<<"User ID : "<<user.userId<<endl;
     }
-
-    return count > 0 ? totalRisk / count : 0.0;
-}
 
 
     void showHistory()
@@ -275,10 +296,6 @@ void TransactionOperation::checkTransactions(User &uu, string accnum, double Amo
     {
         flagged = true;
     }
-    else
-    {
-        risk = risk + 1 * 2.0;
-    }
 
     if (flagged)
     {
@@ -299,10 +316,10 @@ bool TransactionOperation::fraudInAmount(map<string, User> &userDetails, double 
     if (Amount > 2 * averageAmount)
     {
         cout << "Suspicious transaction: Amount exceeds twice the user's average transaction amount." << endl;
-        //return false;
+        // return false;
     }
     char ch;
-    cout << "Hello, Is this you doing transaction for amount Rs. " << Amount;
+    cout << "Hello, Is this you doing transaction for amount Rs.  " << Amount << " (Y/N) :  ";
     cin >> ch;
     if (ch == 'y' || ch == 'Y')
     {
@@ -310,7 +327,7 @@ bool TransactionOperation::fraudInAmount(map<string, User> &userDetails, double 
     }
     else
     {
-        cout << "A transaction exceeding the limit of Rs. 20000 has been attempted on your account by someone other than the account owner. Please review your account activity immediately.";
+        cout << "A transaction exceeding the limit of Rs. 20000 has been attempted on your account by someone other than the account owner. Please review your account activity immediately." << endl;
         return false;
     }
 }
@@ -318,7 +335,7 @@ bool TransactionOperation::fraudInAmount(map<string, User> &userDetails, double 
 bool TransactionOperation::fraudInLocation(map<string, User> &userDetails, string location, double Amount, string accnum)
 {
     char ch;
-    cout << "Hello, Is this you doing transaction from Location = " << location << " for Amount = Rs. " << Amount;
+    cout << "Hello, Is this you doing transaction from Location = " << location << " for Amount = Rs. " << Amount << " (Y/N) :  ";
     cin >> ch;
     if (ch == 'y' || ch == 'Y')
     {
@@ -326,7 +343,7 @@ bool TransactionOperation::fraudInLocation(map<string, User> &userDetails, strin
     }
     else
     {
-        cout << "A transaction exceeding Rs. 20000 was attempted on your account by someone other than the account owner, from a different location.";
+        cout << "A transaction exceeding Rs. 20000 was attempted on your account by someone other than the account owner, from a different location." << endl;
         return false;
     }
 }
@@ -334,7 +351,7 @@ bool TransactionOperation::fraudInLocation(map<string, User> &userDetails, strin
 bool TransactionOperation::fraudInDevice(map<string, User> &userDetails, string currDevice, string Location, double Amount, string accnum)
 {
     char ch;
-    cout << "Hello, Is this you doing transaction from Device = " << currDevice << " from Location = " << Location << " for Amount = Rs. " << Amount;
+    cout << "Hello, Is this you doing transaction from Device = " << currDevice << " from Location = " << Location << " for Amount = Rs. " << Amount << " (Y/N) :  ";
     cin >> ch;
     if (ch == 'y' || ch == 'Y')
     {
@@ -342,7 +359,7 @@ bool TransactionOperation::fraudInDevice(map<string, User> &userDetails, string 
     }
     else
     {
-        cout << "A transaction exceeding Rs. 20000 was attempted on your account by someone other than the account owner, from a different location and device.";
+        cout << "A transaction exceeding Rs. 20000 was attempted on your account by someone other than the account owner, from a different location and device." << endl;
         return false;
     }
 }
@@ -352,9 +369,9 @@ bool TransactionOperation::fraudInTime(int currentHour)
     if (currentHour >= 0 && currentHour <= 5)
     {
         char ch;
-        cout << "Hello, Is this you doing a transaction at this time (current time is " << currentHour << " hours)?\n";
-        cout << "The transaction is happening outside normal hours (12 AM to 5 AM).\n";
-        cout << "Is this transaction legitimate? (y/n): ";
+        cout << "Hello, Is this you doing a transaction at this time (current time is " << currentHour << " hours)? " << endl;
+        cout << "The transaction is happening outside normal hours (12 AM to 5 AM). " << endl;
+        cout << "Is this transaction legitimate? (Y/N) : ";
         cin >> ch;
         if (ch == 'y' || ch == 'Y')
         {
@@ -362,7 +379,7 @@ bool TransactionOperation::fraudInTime(int currentHour)
         }
         else
         {
-            cout << "Transaction marked as suspicious due to time of transaction.\n";
+            cout << "Transaction marked as suspicious due to time of transaction. " << endl;
             return false;
         }
     }
@@ -399,7 +416,8 @@ int main()
         cout << "2. DO TRANSACTIONS " << endl;
         cout << "3. SHOW TRANSACTION HISTORY " << endl;
         cout << "4. CALCULATE AVERAGE RISK RATE FOR SPECIFIC USER TRANSACTION " << endl;
-        cout << "5. EXIT " << endl;
+        cout << "5. SHOW SPECIFIC USER DETAILS " << endl;
+        cout << "6. EXIT " << endl;
 
         cout << "Enter the choice from the Main Menu: ";
         cin >> choice;
@@ -422,7 +440,6 @@ int main()
             userDetails[userAccountnumber] = User(uname, userAccountnumber, bankname, trustedDevice, trustedlocation);
             cout << "User Details Registered " << endl;
             break;
-            
 
         case 2:
             cout << "Enter account number: ";
@@ -473,16 +490,36 @@ int main()
             {
                 User &user = userDetails[accnum];
                 double avgRisk = user.calculateAverageRisk();
-                cout << "Average Risk for User with account " << accnum << ": " << avgRisk << endl;
-                
+                if(avgRisk >= 10.0){
+                    cout<<"ALERT !! Average Risk Factor for User With Account Number => "<<user.getAccountNumber()<<endl;
+                }
+
+                //cout << "Average Risk for User with account " << accnum << ": " << avgRisk << endl;
             }
             else
             {
                 cout << "Account number not found." << endl;
             }
 
+            
+
             break;
+
         case 5:
+            cout << "Enter the account Number you wish to find : ";
+            cin >> accnum;
+
+            if (userDetails.find(accnum) != userDetails.end())
+            {
+                User &user = userDetails[accnum];
+                user.findUserDetails(user);
+            }
+            else
+            {
+                cout << "Account number not found " << endl;
+            }
+
+        case 6:
             cout << "Exiting program." << endl;
             break;
         default:
