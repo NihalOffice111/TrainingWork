@@ -1,8 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
-//
+
 class Transaction
 {
+    // Transaction class to store the transaction details
 private:
     static int transactionIdCounter;
     int transactionId;
@@ -25,6 +26,7 @@ public:
         this->riskfactor = risk;
     }
 
+    // Getters for Easy access of the Member Variables
     int getTransactionId()
     {
         return transactionId;
@@ -55,9 +57,11 @@ public:
         return riskfactor;
     }
 
+    // friend function to overload the << operator (declaration)
     friend ostream &operator<<(ostream &os, const Transaction &tr);
 };
 
+// Overloading the << operator to display the transaction details (definition)
 ostream &operator<<(ostream &os, const Transaction &tr)
 {
     os << "Transaction ID: " << tr.transactionId << ", "
@@ -69,11 +73,13 @@ ostream &operator<<(ostream &os, const Transaction &tr)
     return os;
 }
 
-int Transaction:: transactionIdCounter = 10011;
+// As We Have to Generate Unique Transaction ID for Each Transaction, We are Using a Static Variable to Keep Track of the Transaction ID
+int Transaction::transactionIdCounter = 10011;
 
 class Node
 {
 public:
+    // Doubly Linked List Node to store the Transaction Details
     Transaction transdata;
     Node *next;
     Node *prev;
@@ -92,6 +98,7 @@ static int nextUsedId = 1111;
 
 class User
 {
+    // User class to store the user details and transaction history
 private:
     int userId;
     string username;
@@ -122,11 +129,15 @@ public:
         head = nullptr;
     }
 
-    string getUserName(){
+    // getters
+
+    string getUserName()
+    {
         return username;
     }
 
-    string getbankName(){
+    string getbankName()
+    {
         return bankname;
     }
 
@@ -150,9 +161,7 @@ public:
         return accountnumber;
     }
 
-    
-
-
+    // Function For Calculating the Average Transaction Amount
     double getAverageTransactionAmount()
     {
         if (transactionCount == 0)
@@ -162,15 +171,16 @@ public:
         return totalTransactionAmount / transactionCount;
     }
 
+    // Function to Add a New Transaction to the User's Transaction History (Logic of Inserting at the End of the List)
     void AddTransaction(Transaction tr)
     {
-        Node *newTransaction = new Node(tr);
+        Node *newTransaction = new Node(tr); // Creating a new Node for the Transaction
 
-        if (head == nullptr)
+        if (head == nullptr) // If the List is Empty
         {
             head = newTransaction;
         }
-        else
+        else // If the List is Not Empty
         {
             Node *temp = head;
             while (temp->next != nullptr)
@@ -181,16 +191,18 @@ public:
             newTransaction->prev = temp;
         }
 
-        totalTransactionAmount = totalTransactionAmount + tr.getTransactionAmount();
+        totalTransactionAmount = totalTransactionAmount + tr.getTransactionAmount(); // Updating the Total Transaction Amount
         transactionCount++;
 
         cout << "Current Transaction: " << endl;
-        cout << newTransaction->transdata << endl;
+        cout << newTransaction->transdata << endl; // Displaying the Transaction Details
     }
+
+    // Function to Calculate the Average Risk Rate for the User's Transaction History
 
     double calculateAverageRisk()
     {
-        if (head == nullptr)
+        if (head == nullptr) // If the List is Empty
         {
             return 0.0;
         }
@@ -199,7 +211,7 @@ public:
         double totalRisk = 0.0;
         int count = 0;
 
-        while (temp != nullptr)
+        while (temp != nullptr) // Traversing the List and Calculating the Total Risk
         {
             totalRisk += temp->transdata.getriskFactor();
             count++;
@@ -209,12 +221,17 @@ public:
         return count > 0 ? totalRisk / count : 0.0;
     }
 
-    void findUserDetails(User &user){
-        cout<<"Name : "<< user.getUserName()<<endl;
-        cout<<"Account Number : "<<user.getbankName()<<endl;
-        cout<<"User ID : "<<user.userId<<endl;
+    // Function to Find And Display the User Details
+
+    void findUserDetails(User &user)
+    {
+        cout << "Name : " << user.getUserName() << endl;
+        cout << "Account Number : " << user.getAccountNumber() << endl;
+        cout << "Bank Name : " << user.getbankName() << endl;
+        cout << "User ID : " << user.userId << endl;
     }
 
+    // Function to Display the Transaction History (Logic of Traversing the List and Displaying the Transaction Details)
 
     void showHistory()
     {
@@ -241,6 +258,7 @@ public:
     }
 };
 
+// Transaction Operation Class to Check the Fraud in the Transaction
 class TransactionOperation
 {
 public:
@@ -248,9 +266,10 @@ public:
     bool fraudInAmount(map<string, User> &userDetails, double Amount, string accnum);
     bool fraudInLocation(map<string, User> &userDetails, string location, double Amount, string accnum);
     bool fraudInDevice(map<string, User> &userDetails, string currDevice, string Location, double Amount, string accnum);
-    bool fraudInTime(int currentHour);
+    double fraudInTime(int currentHour);
 };
 
+// Function to Check the Fraud in the Transaction
 void TransactionOperation::checkTransactions(User &uu, string accnum, double Amount, string location, string currdevice, int currenthour, map<string, User> &userDetails)
 {
     bool flagged = false;
@@ -264,7 +283,7 @@ void TransactionOperation::checkTransactions(User &uu, string accnum, double Amo
         }
         else
         {
-            risk = risk + 10 * 8.0;
+            risk = risk + 10 * 8.0; // here 10 is the riskFactor and 8.0 is the weightage constant
         }
     }
 
@@ -276,7 +295,7 @@ void TransactionOperation::checkTransactions(User &uu, string accnum, double Amo
         }
         else
         {
-            risk = risk + 2 * 2.0;
+            risk = risk + 2 * 2.0; // here 2 is the riskFactor and 2.0 is the weightage constant
         }
     }
 
@@ -288,13 +307,18 @@ void TransactionOperation::checkTransactions(User &uu, string accnum, double Amo
         }
         else
         {
-            risk = risk + 3 * 5.0;
+            risk = risk + 3 * 5.0; // here 3 is the riskFactor and 5.0 is the weightage constant
         }
     }
 
-    if (!fraudInTime(currenthour))
+    double timerisk = fraudInTime(currenthour);
+    if (timerisk > 0.0)
     {
-        flagged = true;
+        risk = risk + timerisk * 10.0; // here 10 is the riskFactor and 10.0 is the weightage constant
+        if (timerisk >= 10.0)
+        {
+            flagged = true;
+        }
     }
 
     if (flagged)
@@ -309,6 +333,7 @@ void TransactionOperation::checkTransactions(User &uu, string accnum, double Amo
     }
 }
 
+// Function to Check Fraud in the Amount
 bool TransactionOperation::fraudInAmount(map<string, User> &userDetails, double Amount, string accnum)
 {
     User &u = userDetails[accnum];
@@ -319,7 +344,7 @@ bool TransactionOperation::fraudInAmount(map<string, User> &userDetails, double 
         // return false;
     }
     char ch;
-    cout << "Hello, Is this you doing transaction for amount Rs.  " << Amount << " (Y/N) :  ";
+    cout << "Hello, Is this you doing transaction for amount Rs.  " << Amount << " (Y/N) :  "; // This message will be displayed to the original Account holder
     cin >> ch;
     if (ch == 'y' || ch == 'Y')
     {
@@ -332,10 +357,11 @@ bool TransactionOperation::fraudInAmount(map<string, User> &userDetails, double 
     }
 }
 
+// Function to Check Fraud in the Location
 bool TransactionOperation::fraudInLocation(map<string, User> &userDetails, string location, double Amount, string accnum)
 {
     char ch;
-    cout << "Hello, Is this you doing transaction from Location = " << location << " for Amount = Rs. " << Amount << " (Y/N) :  ";
+    cout << "Hello, Is this you doing transaction from Location = " << location << " for Amount = Rs. " << Amount << " (Y/N) :  "; // This message will be displayed to the original Account holder
     cin >> ch;
     if (ch == 'y' || ch == 'Y')
     {
@@ -348,10 +374,11 @@ bool TransactionOperation::fraudInLocation(map<string, User> &userDetails, strin
     }
 }
 
+// Function to Check Fraud in the Device
 bool TransactionOperation::fraudInDevice(map<string, User> &userDetails, string currDevice, string Location, double Amount, string accnum)
 {
     char ch;
-    cout << "Hello, Is this you doing transaction from Device = " << currDevice << " from Location = " << Location << " for Amount = Rs. " << Amount << " (Y/N) :  ";
+    cout << "Hello, Is this you doing transaction from Device = " << currDevice << " from Location = " << Location << " for Amount = Rs. " << Amount << " (Y/N) :  "; // This message will be displayed to the original Account holder
     cin >> ch;
     if (ch == 'y' || ch == 'Y')
     {
@@ -364,32 +391,34 @@ bool TransactionOperation::fraudInDevice(map<string, User> &userDetails, string 
     }
 }
 
-bool TransactionOperation::fraudInTime(int currentHour)
+// Function to Check Fraud in the Time
+double TransactionOperation::fraudInTime(int currentHour)
 {
     if (currentHour >= 0 && currentHour <= 5)
     {
         char ch;
-        cout << "Hello, Is this you doing a transaction at this time (current time is " << currentHour << " hours)? " << endl;
+        cout << "Hello, Is this you doing a transaction at this time (current time is " << currentHour << " hours)? " << endl; // This message will be displayed to the original Account holder
         cout << "The transaction is happening outside normal hours (12 AM to 5 AM). " << endl;
         cout << "Is this transaction legitimate? (Y/N) : ";
         cin >> ch;
         if (ch == 'y' || ch == 'Y')
         {
-            return true;
+            return 5.0;
         }
         else
         {
             cout << "Transaction marked as suspicious due to time of transaction. " << endl;
-            return false;
+            return 10.0;
         }
     }
-    return true;
+    return 0.0;
 }
 
+// this is the main function
 int main()
 {
-    map<string, User> userDetails;
-    TransactionOperation tq;
+    map<string, User> userDetails; // we use map to store the Details of the User
+    TransactionOperation tq;       // Object of TransactionOperation Class
     int choice;
     char ch;
     string accnum, currdevice, location;
@@ -402,6 +431,7 @@ int main()
     string trustedDevice;
     string trustedlocation;
 
+    // Adding some default users (Samples)
     userDetails["SBI123456"] = User("Honour", "SBI123456", "STATE_BANK_OF_INDIA", "PC", "Nagpur");
     userDetails["HDFC987654"] = User("Edward", "HDFC987654", "HDFC_BANK", "Mobile", "Hyderabad");
     userDetails["ICICI763242"] = User("Arno", "ICICI763242", "ICICI_BANK", "PC", "Raipur");
@@ -484,24 +514,26 @@ int main()
             break;
 
         case 4:
-            cout << "Enter the accoutn number you wish to find the average risk rate : ";
+            cout << "Enter the account number you wish to find the average risk rate : ";
             cin >> accnum;
             if (userDetails.find(accnum) != userDetails.end())
             {
                 User &user = userDetails[accnum];
                 double avgRisk = user.calculateAverageRisk();
-                if(avgRisk >= 10.0){
-                    cout<<"ALERT !! Average Risk Factor for User With Account Number => "<<user.getAccountNumber()<<endl;
+                if (avgRisk >= 10.0)
+                {
+                    cout << "ALERT !! Average Risk Factor " << avgRisk << " for User With Account Number => " << user.getAccountNumber() << endl;
                 }
+                else
+                {
 
-                //cout << "Average Risk for User with account " << accnum << ": " << avgRisk << endl;
+                    cout << "Average Risk for User with account " << accnum << ": " << avgRisk << endl;
+                }
             }
             else
             {
                 cout << "Account number not found." << endl;
             }
-
-            
 
             break;
 
@@ -518,7 +550,7 @@ int main()
             {
                 cout << "Account number not found " << endl;
             }
-
+            break;
         case 6:
             cout << "Exiting program." << endl;
             break;
