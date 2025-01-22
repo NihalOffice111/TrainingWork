@@ -466,7 +466,11 @@ int main()
             cin >> trustedDevice;
             cout << "Enter user trusted location: ";
             cin >> trustedlocation;
-
+            if (userDetails.find(userAccountnumber) != userDetails.end())
+            {
+                cout << "Account number already exists!" << endl;
+                break;
+            }
             userDetails[userAccountnumber] = User(uname, userAccountnumber, bankname, trustedDevice, trustedlocation);
             cout << "User Details Registered " << endl;
             break;
